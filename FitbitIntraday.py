@@ -1,3 +1,6 @@
+''' Module FitbitIntraday contains a class used to retrieve only the fitbit
+intraday step, calorie, floor and time_active data. This data is collected as
+xml files and returned or stored to disk'''
 
 import cookielib
 from datetime import datetime, timedelta
@@ -8,7 +11,7 @@ import urllib2
 
 class FitbitIntraday:
     '''
-    FitbitIntraday is a class for retrieving the 1/5 minute intraday data from
+    FitbitIntraday is a class for retrieving the 5 minute intraday data from
     the fitbit.com website. For all other data requests you should use the
     official fitbit API: http://dev.fitbit.com/
 
@@ -21,7 +24,6 @@ class FitbitIntraday:
         self.cookiej = cookielib.CookieJar()
         cookie_processor = urllib2.HTTPCookieProcessor(self.cookiej)
         self.opener = urllib2.build_opener(cookie_processor)
-        urllib2.install_opener(self.opener)  # Yay violating encapsulation
 
         self.chart_types = {
             'steps': ('intradaySteps', 'column2d'),
@@ -31,6 +33,10 @@ class FitbitIntraday:
         }
 
     def login(self, email, password):
+        '''Process a login to the fitbit website so we can collect appropriate
+         cookies to retrieve data. Assumes both email and password are properly
+         escaped strings'''
+
         auth_url = 'https://www.fitbit.com/login'
         payload = {
             'login': 'Log In',
@@ -43,10 +49,13 @@ class FitbitIntraday:
         request_object = urllib2.Request(auth_url, encoded_data)
 
         #Request the url with our posted login. We now have session cookies
-        response = urllib2.urlopen(request_object)
+        response = self.opener.open(request_object)
         return response
 
     def fetch_chart_data(self, data_type, chart_date):
+        '''fetch chart data for a specified data. Allows types defined in the
+        chart_types dictionary: steps, calories, floors, time_active.'''
+
         delta = timedelta(days=1)
         from_date = datetime.strftime(chart_date, "%Y-%m-%d")
         to_date = datetime.strftime(chart_date + delta, "%Y-%m-%d")
@@ -64,11 +73,14 @@ class FitbitIntraday:
 
         request_string = ''.join(request_string_parts)
         request = urllib2.Request(request_string)
-        response = urllib2.urlopen(request)
+        response = self.opener.open(request)
 
         return response
 
     def fetch_range_to_folder(self, data_type, path, from_date, to_date):
+        '''utility function that repetatively calls fetch_chart_data over a
+        range of dates for one of the 4 valid data types.'''
+
         delta = timedelta(days=1)
         current_day = from_date
         typed_path = path + '\\' + data_type + '\\'
