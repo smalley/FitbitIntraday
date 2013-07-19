@@ -8,7 +8,7 @@ This utility is not currently mature and as such its interface may change dramat
 
 Sample Usage
 ------------
-    from datetime import datetime
+    from datetime import datetime,timedelta
     from FitbitIntraday import FitbitIntraday
     
     fbi = FitbitIntraday()

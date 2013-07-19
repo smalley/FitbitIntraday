@@ -83,14 +83,14 @@ class FitbitIntraday:
 
         delta = timedelta(days=1)
         current_day = from_date
-        typed_path = path + '\\' + data_type + '\\'
+        typed_path = os.path.join(path,data_type)
 
         if not os.path.exists(typed_path):
             os.makedirs(typed_path)
 
         while(current_day <= to_date):
             day_string = datetime.strftime(current_day, "%Y_%m_%d.xml")
-            file_handle = open(typed_path + day_string, 'w')
+            file_handle = open(os.path.join(typed_path,day_string), 'w')
             chart_data = self.fetch_chart_data(data_type, current_day)
             file_handle.write(chart_data.read())
             file_handle.close()
